@@ -18,23 +18,37 @@ class Player:
         self.vx = 0 #Starting Velocity
         self.vy = 0
         self.gravity = 0.6 #Gravity
-        self.accel = 0.6 #Acceleration
+        self.accel_ground = 0.6 #Acceleration on the floor
+        self.accel_air = 0.2 #Acceleration in the air
+        self.friction_air = 0.9
+        self.friction_ground = 0.1
         self.max_fall = 8 #Prevents clipping
-        self.max_speed = 8 #Sets Max Speed
+        self.max_speed = 4 #Sets Max Speed
         self.on_ground = False #Statement gets changed when on a plattform
 
         self.hp = 20 #Hp
         pyxel.image(0).load(0, 0, "assets/player.png") #Sprite
 
     def update(self):
-        self.vx =0 #Prevents further movement after letting go of A/D
+        if self.vx > self.max_speed: self.vx = self.max_speed
+        if self.vx < -self.max_speed: self.vx = -self.max_speed
+        
+        if self.on_ground:
+            accel = self.accel_ground
+        else:
+            accel = self.accel_air
 
         if self.on_ground and pyxel.btnp(pyxel.KEY_SPACE):
             self.vy = -8
         if pyxel.btn(pyxel.KEY_D):
-            self.vx = 4
-        if pyxel.btn(pyxel.KEY_A):
-            self.vx = -4
+            self.vx += accel
+        elif pyxel.btn(pyxel.KEY_A):
+            self.vx -= accel
+        else:
+            #  No input -> slow down
+            self.vx *= (self.friction_ground if self.on_ground else self.friction_air)
+            if abs(self.vx) < 0.05:
+                self.vx = 0
 
         # Saves Position in case of colision
         old_x = self.x
