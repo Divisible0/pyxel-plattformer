@@ -30,27 +30,31 @@ class Player:
         pyxel.image(0).load(0, 0, "assets/player.png") #Sprite
 
     def update(self):
-        if self.vx > self.max_speed: self.vx = self.max_speed
-        if self.vx < -self.max_speed: self.vx = -self.max_speed
+        if self.vx > self.max_speed: #speed limit (positive x)
+            self.vx = self.max_speed 
+        if self.vx < -self.max_speed: #speed limit (negative x)
+            self.vx = -self.max_speed 
         
+        # When in the air/on the ground uses the apropriate acceleration property
         if self.on_ground:
             accel = self.accel_ground
         else:
             accel = self.accel_air
 
+        #Sets movement
         if self.on_ground and pyxel.btnp(pyxel.KEY_SPACE):
             self.vy = -8
         if pyxel.btn(pyxel.KEY_D):
-            self.vx += accel
+            self.vx += accel #Uses the acceleration property to move
         elif pyxel.btn(pyxel.KEY_A):
-            self.vx -= accel
+            self.vx -= accel #Uses the acceleration property to move
         else:
             #  No input -> slow down
             self.vx *= (self.friction_ground if self.on_ground else self.friction_air)
             if abs(self.vx) < 0.05:
                 self.vx = 0
 
-        # Saves Position in case of colision
+        # Saves current Position in case of colision
         old_x = self.x
         old_y = self.y
 
