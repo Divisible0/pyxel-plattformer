@@ -1,4 +1,17 @@
+
 import pyxel
+
+#World size
+WORLD_WIDTH = 1080
+WORLD_HEIGHT = 720
+
+#Camera Size
+VIEW_WIDTH = 360
+VIEW_HEIGHT = 240
+
+
+def clamp(value, minimum, maximum): #Used to prevent any value going over their maximum. Later used to prevent camera from exiting the world
+    return max(minimum, min(value, maximum))
 
 # AABB collision check
 def aabb(ax, ay, aw, ah, bx, by, bw, bh): 
@@ -9,7 +22,7 @@ def aabb(ax, ay, aw, ah, bx, by, bw, bh):
 
 class Player:
     def __init__(self):
-        self.x = 704 #Starting Position
+        self.x = 120 #Starting Position
         self.y = 704
 
         self.w = 16 #Width
@@ -70,8 +83,8 @@ class Player:
         self.on_ground = False
 
         # World floor (fallback)
-        if self.y > 704:
-            self.y = 704
+        if self.y > WORLD_HEIGHT - self.h:
+            self.y = WORLD_HEIGHT - self.h
             self.vy = 0
             self.on_ground = True
 
@@ -119,6 +132,20 @@ class Platform:
             pyxel.blt(self.x + i * 16, self.y, 1, 0, 0, 16, 16) #builds the squares next to eachother
 
 
+#sets the upper left edge of the camera (width is set in the top of the code)
+#this point is later moved to match the player position
+camera_x = 0
+camera_y = 0
+
+def update_camera(): #Function to update camera
+    global camera_x, camera_y # Sets camera_x and camera_y to be global (available not only in the function)
+
+    target_x = player.x + player.w / 2 - VIEW_WIDTH / 2 #Calculates Camera Position (x)
+    target_y = player.y + player.h / 2 - VIEW_HEIGHT / 2 #Calculates Camera Position (y)
+
+    camera_x = clamp(target_x, 0, WORLD_WIDTH - VIEW_WIDTH) # Prevents camera from clipping out of the world (x)
+    camera_y = clamp(target_y, 0, WORLD_HEIGHT - VIEW_HEIGHT) # Prevents camera from clipping out of the world (y)
+
 #Assign variables/lists to the classes (to draw them)
 player = Player()
 platforms = [
@@ -131,10 +158,14 @@ platforms = [
 
 #The draw function repeats itself every frame
 def draw():
+    update_camera() #Camera Position
     pyxel.cls(0) #Clears Screen
+    pyxel.camera(camera_x, camera_y) #Camera Position (set in update_camera)
     player.draw() #Draws player
     for p in platforms: #Draws all the plattforms
         p.draw()
-    
-pyxel.init(1080,720) #Game window size
+
+    pyxel.camera(0, 0)
+
+pyxel.init(VIEW_WIDTH, VIEW_HEIGHT, display_scale=3) #Smaller view = zoomed camera
 pyxel.run(player.update, draw) #Executes the draw function & updates (every frame)
