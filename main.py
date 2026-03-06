@@ -31,10 +31,10 @@ class Player:
         self.vx = 0 #Starting Velocity
         self.vy = 0
         self.gravity = 0.6 #Gravity
-        self.accel_ground = 0.6 #Acceleration on the floor
+        self.accel_ground = 0.7 #Acceleration on the floor
         self.accel_air = 0.2 #Acceleration in the air
         self.friction_air = 0.9
-        self.friction_ground = 0.1
+        self.friction_ground = 0.01
         self.max_fall = 8 #Prevents clipping
         self.max_speed = 4 #Sets Max Speed
         self.on_ground = False #Statement gets changed when on a plattform
