@@ -177,7 +177,10 @@ platforms = [
 #The draw function repeats itself every frame
 def draw():
     update_camera() #Camera Position
-    pyxel.cls(0) #Clears Screen
+    pyxel.cls(2) #Clears Screen
+    pyxel.colors[15] = 0x525252
+    pyxel.colors[1] = 0x000000
+    pyxel.bltm(0, 0, 0, 0, -112, 360, 240, 0)
     pyxel.camera(camera_x, camera_y) #Camera Position (set in update_camera)
     player.draw() #Draws player
     for p in platforms: #Draws all the plattforms
@@ -186,5 +189,7 @@ def draw():
     pyxel.camera(0, 0)
 
 pyxel.init(VIEW_WIDTH, VIEW_HEIGHT, display_scale=3) #Smaller view = zoomed camera
+
+
 pyxel.load("assets/resources.pyxres")
 pyxel.run(player.update, draw) #Executes the draw function & updates (every frame)
