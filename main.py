@@ -28,9 +28,17 @@ class Player:
         self.w = 16 #Width
         self.h = 16 #Height
 
+        # Hitbox width/height
+        self.hitbox_w = 12
+        self.hitbox_h = 15
+
+        #Empty space
+        self.hitbox_offset_x = 2 
+        self.hitbox_offset_y = 1
+
         self.vx = 0 #Starting Velocity
         self.vy = 0
-        self.gravity = 0.6 #Gravity
+        self.gravity = 0.8 #Gravity
         self.accel_ground = 0.7 #Acceleration on the floor
         self.accel_air = 0.2 #Acceleration in the air
         self.friction_air = 0.9
@@ -40,7 +48,14 @@ class Player:
         self.on_ground = False #Statement gets changed when on a plattform
 
         self.hp = 20 #Hp
-        pyxel.image(0).load(0, 0, "assets/player.png") #Sprite
+
+    def hitbox(self):
+        return (
+            self.x + self.hitbox_offset_x,
+            self.y + self.hitbox_offset_y,
+            self.hitbox_w,
+            self.hitbox_h
+    )
 
     def update(self):
         if self.vx > self.max_speed: #speed limit (positive x)
@@ -56,7 +71,7 @@ class Player:
 
         #Sets movement
         if self.on_ground and pyxel.btnp(pyxel.KEY_SPACE):
-            self.vy = -8
+            self.vy = -9
         if pyxel.btn(pyxel.KEY_D):
             self.vx += accel #Uses the acceleration property to move
         elif pyxel.btn(pyxel.KEY_A):
@@ -88,33 +103,38 @@ class Player:
             self.vy = 0
             self.on_ground = True
 
+        hx, hy, hw, hh = self.hitbox() #Assigns the hitbox values for the collision calculation
+
+        #saves position before collision (including hitbox properties)
+        old_hx = old_x + self.hitbox_offset_x 
+        old_hy = old_y + self.hitbox_offset_y
+
         # Platform collisions
         for p in platforms:
-            if aabb(self.x, self.y, self.w, self.h, p.x, p.y, p.w, p.h):
+            if aabb(hx, hy, hw, hh, p.x, p.y, p.w, p.h):
+
                 # Coming from above (landing)
-                if old_y + self.h <= p.y and self.y + self.h > p.y:
-                    self.y = p.y - self.h
+                if old_hy + hh <= p.y and hy + hh > p.y:
+                    self.y = p.y - self.hitbox_h - self.hitbox_offset_y
                     self.vy = 0
                     self.on_ground = True
 
                 # Coming from below (head bump)
-                elif old_y >= p.y + p.h and self.y < p.y + p.h:
-                    self.y = p.y + p.h
+                elif old_hy >= p.y + p.h and hy < p.y + p.h:
+                    self.y = p.y + p.h - self.hitbox_offset_y
                     self.vy = 0
 
                 # Coming from left
-                elif old_x + self.w <= p.x and self.x + self.w > p.x:
-                    self.x = p.x - self.w
+                elif old_hx + hw <= p.x and hx + hw > p.x:
+                    self.x = p.x - self.hitbox_w - self.hitbox_offset_x
                     self.vx = 0
 
                 # Coming from right
-                elif old_x >= p.x + p.w and self.x < p.x + p.w:
-                    self.x = p.x + p.w
+                elif old_hx >= p.x + p.w and hx < p.x + p.w:
+                    self.x = p.x + p.w - self.hitbox_offset_x
                     self.vx = 0
-
     def draw(self):
-        pyxel.blt(self.x, self.y, 0, 0, 0, 16, 16)
-
+        pyxel.blt(self.x, self.y, 0, 0, 0, 16, 16, 0)
 
 
 class Platform:
@@ -124,12 +144,10 @@ class Platform:
         self.w = w
         self.h = h
 
-        pyxel.image(1).load(0, 0, "assets/block.png")
-    
     def draw(self):
         tiles = max(1, self.w // 16) #Calculates the width of the plattform into whole blocks (pixel/16)
         for i in range(tiles): #repeats the process that many times
-            pyxel.blt(self.x + i * 16, self.y, 1, 0, 0, 16, 16) #builds the squares next to eachother
+            pyxel.blt(self.x + i * 16, self.y, 0, 16, 0, 16, 16, 0) #builds the squares next to eachother
 
 
 #sets the upper left edge of the camera (width is set in the top of the code)
@@ -168,4 +186,5 @@ def draw():
     pyxel.camera(0, 0)
 
 pyxel.init(VIEW_WIDTH, VIEW_HEIGHT, display_scale=3) #Smaller view = zoomed camera
+pyxel.load("assets/resources.pyxres")
 pyxel.run(player.update, draw) #Executes the draw function & updates (every frame)
