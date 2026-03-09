@@ -19,7 +19,7 @@ def aabb(ax, ay, aw, ah, bx, by, bw, bh):
         ax < bx + bw and ax + aw > bx and
         ay < by + bh and ay + ah > by
     )
-
+#Player class. Contains all the player properties
 class Player:
     def __init__(self):
         self.x = 120 #Starting Position
@@ -32,7 +32,7 @@ class Player:
         self.hitbox_w = 12
         self.hitbox_h = 15
 
-        #Empty space
+        #Hitbox position (centers the hitbox)
         self.hitbox_offset_x = 2 
         self.hitbox_offset_y = 1
 
@@ -46,12 +46,12 @@ class Player:
         self.max_fall = 8 #Prevents clipping
         self.max_speed = 4 #Sets Max Speed
         self.on_ground = False #Statement gets changed when on a plattform
-        self.state = "idle"
-        self.air = False
+        self.state = "idle" #State used for movement models
+        self.air = False #State used for movement models
 
         self.hp = 20 #Hp
 
-    def hitbox(self):
+    def hitbox(self): #uses the hitbox properties from __init__ to calculate the hitbox
         return (
             self.x + self.hitbox_offset_x,
             self.y + self.hitbox_offset_y,
@@ -68,26 +68,27 @@ class Player:
         # When in the air/on the ground uses the apropriate acceleration property
         if self.on_ground:
             accel = self.accel_ground
-            self.air = False
+            self.air = False #Updates the state of the movement model
         else:
             accel = self.accel_air
-            self.air = True
+            self.air = True #^^^
 
         #Sets movement
         if self.on_ground and pyxel.btnp(pyxel.KEY_SPACE):
-            self.vy = -9
+            self.vy = -9 #Jump
         if pyxel.btn(pyxel.KEY_D):
             self.vx += accel #Uses the acceleration property to move
-            self.state = "facing_right"
+            self.state = "facing_right" #Movement model state
         elif pyxel.btn(pyxel.KEY_A):
             self.vx -= accel #Uses the acceleration property to move
-            self.state ="facing_left"
+            self.state ="facing_left" #Movement Model state
         else:
-            #  No input -> slow down
+            # Slow down (friction)
             self.vx *= (self.friction_ground if self.on_ground else self.friction_air)
             if abs(self.vx) < 0.05:
                 self.vx = 0
-        
+
+        #Selects the correct movement model depending on the state
         global u, v
         u, v = 0, 0
         if self.state == "idle" and self.air == False:
@@ -163,7 +164,7 @@ class Player:
 
 
 class Platform:
-    def __init__(self, x, y, w, h):
+    def __init__(self, x, y, w, h): #Platform properties can be defined later
         self.x = x
         self.y = y
         self.w = w
@@ -203,13 +204,12 @@ platforms = [
 def draw():
     update_camera() #Camera Position
     pyxel.cls(2) #Clears Screen
-    pyxel.colors[15] = 0x525252
-    pyxel.colors[1] = 0x000000
+    pyxel.colors[15] = 0x525252 #Reassign colors (gray)
+    pyxel.colors[1] = 0x000000 #Reassign colors (black)
     pyxel.camera(camera_x, camera_y) #Camera Position (set in update_camera)
     player.draw() #Draws player
     for p in platforms: #Draws all the plattforms
         p.draw()
-
     pyxel.camera(0, 0)
 
 pyxel.init(VIEW_WIDTH, VIEW_HEIGHT, display_scale=3) #Smaller view = zoomed camera
