@@ -1,5 +1,9 @@
 Check out my first Pyxel Game!
 
+Requirements:
+- Python 3.12.x https://www.python.org/
+- Pyxel https://github.com/kitao/pyxel
+
 Contents:
 - simple movement physics (slowing down in the air, jumps movement in x and y direction)
 - collision checks
