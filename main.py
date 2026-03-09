@@ -46,6 +46,8 @@ class Player:
         self.max_fall = 8 #Prevents clipping
         self.max_speed = 4 #Sets Max Speed
         self.on_ground = False #Statement gets changed when on a plattform
+        self.state = "idle"
+        self.air = False
 
         self.hp = 20 #Hp
 
@@ -66,22 +68,44 @@ class Player:
         # When in the air/on the ground uses the apropriate acceleration property
         if self.on_ground:
             accel = self.accel_ground
+            self.air = False
         else:
             accel = self.accel_air
+            self.air = True
 
         #Sets movement
         if self.on_ground and pyxel.btnp(pyxel.KEY_SPACE):
             self.vy = -9
         if pyxel.btn(pyxel.KEY_D):
             self.vx += accel #Uses the acceleration property to move
+            self.state = "facing_right"
         elif pyxel.btn(pyxel.KEY_A):
             self.vx -= accel #Uses the acceleration property to move
+            self.state ="facing_left"
         else:
             #  No input -> slow down
             self.vx *= (self.friction_ground if self.on_ground else self.friction_air)
             if abs(self.vx) < 0.05:
                 self.vx = 0
+        
+        global u, v
+        u, v = 0, 0
+        if self.state == "idle" and self.air == False:
+            u, v = 0, 0
+        elif self.state == "facing_right" and self.air == False:
+            u, v = 0, 32
+        elif self.state == "facing_left" and self.air == False:
+            u, v = 0, 16
+        elif self.state == "idle" and self.air == True:
+            u, v = 0, 80
+        elif self.state == "facing_right" and self.air == True:
+            u, v, = 0, 48
+        elif self.state == "facing_left" and self.air == True:
+            u, v = 0, 64
+        else:
+            u, v = 0, 0
 
+        
         # Saves current Position in case of colision
         old_x = self.x
         old_y = self.y
@@ -133,8 +157,9 @@ class Player:
                 elif old_hx >= p.x + p.w and hx < p.x + p.w:
                     self.x = p.x + p.w - self.hitbox_offset_x
                     self.vx = 0
+
     def draw(self):
-        pyxel.blt(self.x, self.y, 0, 0, 0, 16, 16, 0)
+        pyxel.blt(self.x, self.y, 0, u, v, 16, 16, 0)
 
 
 class Platform:
@@ -180,7 +205,6 @@ def draw():
     pyxel.cls(2) #Clears Screen
     pyxel.colors[15] = 0x525252
     pyxel.colors[1] = 0x000000
-    pyxel.bltm(0, 0, 0, 0, -112, 360, 240, 0)
     pyxel.camera(camera_x, camera_y) #Camera Position (set in update_camera)
     player.draw() #Draws player
     for p in platforms: #Draws all the plattforms
@@ -189,7 +213,5 @@ def draw():
     pyxel.camera(0, 0)
 
 pyxel.init(VIEW_WIDTH, VIEW_HEIGHT, display_scale=3) #Smaller view = zoomed camera
-
-
 pyxel.load("assets/resources.pyxres")
 pyxel.run(player.update, draw) #Executes the draw function & updates (every frame)
