@@ -77,9 +77,13 @@ class Player:
         if self.on_ground and pyxel.btnp(pyxel.KEY_SPACE):
             self.vy = -9 #Jump
         if pyxel.btn(pyxel.KEY_D):
+            if self.on_ground and self.vx < 0:
+                self.vx = 0
             self.vx += accel #Uses the acceleration property to move
             self.state = "facing_right" #Movement model state
         elif pyxel.btn(pyxel.KEY_A):
+            if self.on_ground and self.vx > 0:
+                self.vx = 0
             self.vx -= accel #Uses the acceleration property to move
             self.state ="facing_left" #Movement Model state
         else:
@@ -204,7 +208,6 @@ platforms = [
 def draw():
     update_camera() #Camera Position
     pyxel.cls(2) #Clears Screen
-    pyxel.colors[15] = 0x525252 #Reassign colors (gray)
     pyxel.colors[1] = 0x000000 #Reassign colors (black)
     pyxel.camera(camera_x, camera_y) #Camera Position (set in update_camera)
     player.draw() #Draws player
