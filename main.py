@@ -5,6 +5,8 @@ import pyxel
 WORLD_WIDTH = 1080
 WORLD_HEIGHT = 720
 
+
+
 #Camera Size
 VIEW_WIDTH = 360
 VIEW_HEIGHT = 240
@@ -18,6 +20,18 @@ def collision(ax, ay, aw, ah, bx, by, bw, bh):
         ax < bx + bw and ax + aw > bx and
         ay < by + bh and ay + ah > by
     )
+
+class BackgroundLayer:
+    def __init__(self, filename, parallax_x=1.0, parallax_y=1.0):
+        self.image = pyxel.Image(WORLD_WIDTH, WORLD_HEIGHT)
+        self.image.load(0, 0, filename)
+        self.parallax_x = parallax_x
+        self.parallax_y = parallax_y
+
+    def draw(self, colkey=0):
+        src_u = int(camera_x * self.parallax_x)
+        src_v = int(camera_y * self.parallax_y)
+        pyxel.blt(camera_x, camera_y, self.image, src_u, src_v, VIEW_WIDTH, VIEW_HEIGHT, colkey)
 
 class Player:
     def __init__(self):
@@ -189,13 +203,23 @@ platforms = [
     Platform(800, 578, 64, 16)
     ]
 
+backgrounds = [
+    BackgroundLayer("assets/Back2.png", parallax_x=0.6, parallax_y=1.0),
+    BackgroundLayer("assets/Back.png",  parallax_x=0.7, parallax_y=1.0),
+    BackgroundLayer("assets/Mid.png",   parallax_x=0.9, parallax_y=1.0),
+    BackgroundLayer("assets/Front.png", parallax_x=1.0, parallax_y=1.0),
+]
+
 def update():
     player.update()
     update_camera()
 
 def draw():
-    pyxel.cls(2) #Clears Screen
+    pyxel.cls(0) #Clears Screen
     pyxel.camera(camera_x, camera_y) #Camera Position (set in update_camera)
+    backgrounds[0].draw()  # Back2 - kein colkey, alles sichtbar
+    for bg in backgrounds[1:]:  # Back, Mid, Front - transparent
+        bg.draw(colkey=7)
     player.draw() #Draws player
     for p in platforms: #Draws all the plattforms
         p.draw()
