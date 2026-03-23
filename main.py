@@ -59,6 +59,8 @@ class Player:
         self.on_ground = False
         self.air = False
         self.state = "idle"
+        self.stamina = 0
+        self.dash_timer = 0
 
     def hitbox(self):
         return (
@@ -69,10 +71,14 @@ class Player:
     )
 
     def update(self):
-        if self.vx > self.max_speed:
-            self.vx = self.max_speed 
-        if self.vx < -self.max_speed:
-            self.vx = -self.max_speed 
+        self.stamina += 1
+        if self.dash_timer > 0:
+            self.dash_timer -= 1
+        else:
+            if self.vx > self.max_speed:
+                self.vx = self.max_speed
+            if self.vx < -self.max_speed:
+                self.vx = -self.max_speed
         
         if self.on_ground:
             accel = self.accel_ground
@@ -95,10 +101,18 @@ class Player:
                 self.vx = 0
             self.vx -= accel
             self.state ="facing_left"
-        else:
+        elif self.dash_timer <= 0:
             self.vx *= (friction)
             if abs(self.vx) < 0.05:
                 self.vx = 0
+        if pyxel.btn(pyxel.KEY_LSHIFT) and self.stamina >= 30:
+            self.stamina = 0
+            self.dash_timer = 6
+            if self.state == "facing_right":
+                self.vx = 9
+            elif self.state == "facing_left":
+                self.vx = -9
+            
 
         # Movement Model
         global u, v
