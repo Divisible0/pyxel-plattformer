@@ -58,6 +58,7 @@ class Player:
         self.max_speed = 4
         self.on_ground = False
         self.air = False
+        self.dash = False
         self.state = "idle"
         self.stamina = 0
         self.dash_timer = 0
@@ -71,6 +72,7 @@ class Player:
     )
 
     def update(self):
+        self.dash = False
         self.stamina += 1
         if self.dash_timer > 0:
             self.dash_timer -= 1
@@ -110,8 +112,10 @@ class Player:
             self.dash_timer = 6
             if self.state == "facing_right":
                 self.vx = 9
+                self.dash = True
             elif self.state == "facing_left":
                 self.vx = -9
+                self.dash = True
             
 
         # Movement Model
@@ -126,12 +130,17 @@ class Player:
         elif self.state == "idle" and self.air == True:
             u, v = 0, 80
         elif self.state == "facing_right" and self.air == True:
-            u, v, = 0, 48
+            if self.dash_timer > 0:
+                u, v = 0, 112
+            else:
+                u, v, = 0, 48
         elif self.state == "facing_left" and self.air == True:
-            u, v = 0, 64
+            if self.dash_timer > 0:
+                u, v = 0, 96
+            else:
+                u, v = 0, 64
         else:
             u, v = 0, 0
-
 
         self.vy += self.gravity
         if self.vy > self.max_fall:
@@ -194,7 +203,7 @@ class Platform:
     def draw(self):
         tiles = max(1, self.w // 16) #Calculates the width of the plattform into whole blocks (pixel/16)
         for i in range(tiles):
-            pyxel.blt(self.x + i * 16, self.y, 0, 16, 0, 16, 16, 0)
+            pyxel.blt(self.x + i * 16, self.y, 0, 64, 0, 16, 16, 0)
 
 camera_x = 0
 camera_y = 0
