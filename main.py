@@ -62,6 +62,7 @@ class Player:
         self.state = "idle"
         self.stamina = 0
         self.dash_timer = 0
+        self.hit_timer = 0
 
     def hitbox(self):
         return (
@@ -107,6 +108,11 @@ class Player:
             self.vx *= (friction)
             if abs(self.vx) < 0.05:
                 self.vx = 0
+        if pyxel.btnp(pyxel.KEY_J):
+            self.hit_timer = 10
+        if self.hit_timer > 0:
+            self.hit_timer -= 1
+
         if pyxel.btn(pyxel.KEY_LSHIFT) and self.stamina >= 30:
             self.stamina = 0
             self.dash_timer = 6
@@ -189,8 +195,17 @@ class Player:
                     self.x = p.x + p.w - self.hitbox_offset_x
                     self.vx = 0
 
+    def hit_rect(self):
+        if self.state == "facing_right":
+            return (self.x + self.w, self.y + 4, 12, 8)
+        else:  # facing_left oder idle
+            return (self.x - 12, self.y + 4, 12, 8)
+
     def draw(self):
         pyxel.blt(self.x, self.y, 0, u, v, 16, 16, 0)
+        if self.hit_timer > 0:
+            hx, hy, hw, hh = self.hit_rect()
+            pyxel.rectb(hx, hy, hw, hh, 8)  # orange Rahmen
 
 
 class Platform:
@@ -205,6 +220,19 @@ class Platform:
         for i in range(tiles):
             pyxel.blt(self.x + i * 16, self.y, 0, 64, 0, 16, 16, 0)
 
+class Flower_Tall:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.w = 16
+        self.h = 16
+        self.status = "fixed"
+    
+    def draw(self):
+        if self.status == "fixed":
+            pyxel.blt(self.x, self.y, 0, 32, 0, 16, 16, 0)
+        else:
+            pyxel.blt(self.x, self.y, 0, 48, 16, 16, 16, 0)
 camera_x = 0
 camera_y = 0
 
@@ -218,6 +246,10 @@ def update_camera(): #Function to update camera
     camera_y = clamp(target_y, 0, WORLD_HEIGHT - VIEW_HEIGHT) # Prevents camera from clipping out of the world (y)
 
 player = Player()
+flowers = [
+    Flower_Tall(540, 672),
+    Flower_Tall(400, 640),
+]
 platforms = [
     Platform(512, 688, 64, 16),
     Platform(368, 656, 64, 16),
@@ -236,6 +268,11 @@ backgrounds = [
 def update():
     player.update()
     update_camera()
+    if player.hit_timer > 0:
+        hx, hy, hw, hh = player.hit_rect()
+        for f in flowers:
+            if f.status == "fixed" and collision(hx, hy, hw, hh, f.x, f.y, f.w, f.h):
+                f.status = "broken"
 
 def draw():
     pyxel.cls(0) #Clears Screen
@@ -246,6 +283,8 @@ def draw():
     player.draw() #Draws player
     for p in platforms: #Draws all the plattforms
         p.draw()
+    for f in flowers:
+        f.draw()
 
 pyxel.init(VIEW_WIDTH, VIEW_HEIGHT, display_scale=3) #Smaller view = zoomed camera
 pyxel.colors[1] = 0x000000 #Reassign colors (black)
