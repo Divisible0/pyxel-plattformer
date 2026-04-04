@@ -1,4 +1,3 @@
-
 import pyxel
 
 #World size
