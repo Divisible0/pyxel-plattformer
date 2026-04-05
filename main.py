@@ -232,6 +232,15 @@ class Flower_Tall:
             pyxel.blt(self.x, self.y, 0, 32, 0, 16, 16, 0)
         else:
             pyxel.blt(self.x, self.y, 0, 48, 16, 16, 16, 0)
+
+class Jumppad:
+    def __init_(self, x, y, force):
+        self.x = x
+        self.y = y
+        self.force = force
+
+
+
 camera_x = 0
 camera_y = 0
 
@@ -245,16 +254,21 @@ def update_camera(): #Function to update camera
     camera_y = clamp(target_y, 0, WORLD_HEIGHT - VIEW_HEIGHT) # Prevents camera from clipping out of the world (y)
 
 player = Player()
+
 flowers = [
     Flower_Tall(540, 672),
     Flower_Tall(400, 640),
 ]
+
 platforms = [
     Platform(512, 688, 64, 16),
     Platform(368, 656, 64, 16),
     Platform(496, 624, 64, 16),
     Platform(656, 608, 64, 16),
-    Platform(800, 578, 64, 16)
+    Platform(800, 578, 64, 16),
+    Platform(864, 336, 64, 16),
+    Platform(736, 336, 64, 16)
+
     ]
 
 backgrounds = [
@@ -287,5 +301,8 @@ def draw():
 
 pyxel.init(VIEW_WIDTH, VIEW_HEIGHT, display_scale=3) #Smaller view = zoomed camera
 pyxel.colors[1] = 0x000000 #Reassign colors (black)
+pyxel.colors[4] = 0x3d3d3d
+pyxel.colors[12] = 0x626262
+pyxel.colors[10] = 0x9c9c9c
 pyxel.load("assets/resources.pyxres")
 pyxel.run(update, draw) #Executes the draw function & updates (every frame)
